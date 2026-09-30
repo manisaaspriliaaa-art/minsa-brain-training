@@ -1,5 +1,2939 @@
-<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BANTUISA — Saling bantu, satu solusi.</title><link rel="stylesheet" href="style.css"></head><body><header class="sitehead"><a href="index.html"><img src="assets/logo.png" class="logo"></a><nav><a href="#bantuan">Cari Bantuan</a><a href="#tentang">Tentang</a><a href="dashboard.html">Dashboard</a></nav><div class="headright"><button class="small" onclick="theme()">🌙</button><button id="account" class="login" onclick="location.href='auth.html'">Masuk</button></div></header><main class="container"><section class="hero"><div><span class="eyebrow">🌍 PLATFORM BANTUAN GLOBAL</span><h1>Butuh bantuan?<br><span>Kita cari solusinya.</span></h1><p>BANTUISA mempertemukan orang yang membutuhkan bantuan dengan orang yang ingin membantu, dari satu kota sampai lintas negara.</p><div class="search"><span>🔎</span><input id="q" placeholder="Cari bantuan, barang, informasi..."><button class="primary" onclick="loadPosts()">Cari</button></div><div class="actions"><button class="primary" onclick="openCreate()">🙋 Saya Butuh Bantuan</button><button class="secondary" onclick="document.querySelector('#bantuan').scrollIntoView({behavior:'smooth'})">💙 Saya Ingin Membantu</button></div></div><div class="hero-art">🤝<div class="bubble one">📚 Butuh buku kuliah</div><div class="bubble two">💙 Sudah dibantu!</div></div></section><section id="bantuan" class="section"><div class="heading"><div><span class="eyebrow">TEMUKAN BANTUAN</span><h2>Permintaan komunitas</h2></div><button class="primary" onclick="openCreate()">+ Ajukan Bantuan</button></div><div class="filters"><button data-cat="all" class="active" onclick="setCat('all',this)">Semua</button><button data-cat="pendidikan" onclick="setCat('pendidikan',this)">🎓 Pendidikan</button><button data-cat="barang" onclick="setCat('barang',this)">📦 Barang</button><button data-cat="makanan" onclick="setCat('makanan',this)">🍚 Makanan</button><button data-cat="pekerjaan" onclick="setCat('pekerjaan',this)">💼 Pekerjaan</button><button data-cat="informasi" onclick="setCat('informasi',this)">💡 Informasi</button><button data-cat="kesehatan" onclick="setCat('kesehatan',this)">🩺 Kesehatan</button><button data-cat="darurat" onclick="setCat('darurat',this)">🆘 Darurat</button><button data-cat="transportasi" onclick="setCat('transportasi',this)">🚗 Transportasi</button><button data-cat="tempat tinggal" onclick="setCat('tempat tinggal',this)">🏠 Tempat Tinggal</button><button data-cat="dokumen" onclick="setCat('dokumen',this)">📄 Dokumen</button><button data-cat="teknologi" onclick="setCat('teknologi',this)">💻 Teknologi</button><select id="status" onchange="loadPosts()"><option value="all">Semua status</option><option>Menunggu Bantuan</option><option>Sedang Dibantu</option><option>Selesai</option></select><input id="loc" placeholder="📍 Kota / negara" oninput="loadPosts()"><select id="country" onchange="loadPosts()"><option value="all">🌍 Semua negara</option><option>Indonesia</option><option>Malaysia</option><option>Singapore</option><option>Thailand</option><option>Philippines</option><option>India</option><option>Japan</option><option>South Korea</option><option>Australia</option><option>United States</option><option>United Kingdom</option><option>Canada</option><option>Germany</option><option>France</option><option>Other</option></select></div><div id="grid" class="grid"></div></section><section id="tentang" class="section"><div class="cards"><article>🙋<h3>Ajukan kebutuhan</h3><p>Sampaikan kebutuhan dengan jelas supaya orang lain mudah memahami bantuan yang dibutuhkan.</p></article><article>🤝<h3>Temukan bantuan</h3><p>Cari berdasarkan kata kunci, kategori, status, dan lokasi.</p></article><article>💬<h3>Terhubung</h3><p>Setelah terhubung sebagai pembantu, komunikasi bisa dilanjutkan lewat chat.</p></article></div></section></main><footer class="sitefoot"><b>BANTUISA</b><span>Saling bantu, satu solusi.</span><a href="dashboard.html">Dashboard</a></footer><div id="modal" class="modal"></div><script src="app.js"></script><script>
-let category='all';function setCat(c,b){category=c;document.querySelectorAll('[data-cat]').forEach(x=>x.classList.remove('active'));b.classList.add('active');loadPosts()}async function loadPosts(){const q=encodeURIComponent(document.querySelector('#q').value||'');const loc=encodeURIComponent(document.querySelector('#loc').value||'');const st=encodeURIComponent(document.querySelector('#status').value||'all');const country=encodeURIComponent(document.querySelector('#country').value||'all');try{const r=await api('posts',null,`&q=${q}&category=${encodeURIComponent(category)}&location=${loc}&country=${country}&status=${st}`);document.querySelector('#grid').innerHTML=r.posts.length?r.posts.map(postCard).join(''):'<div class="empty" style="grid-column:1/-1">Belum ada bantuan yang cocok. Coba kata kunci atau kategori lain.</div>'}catch(e){document.querySelector('#grid').innerHTML='<div class="empty" style="grid-column:1/-1">'+esc(e.message)+'</div>'}}
-function openCreate(){modal(`<h2>Ajukan Bantuan</h2><p class="muted">Ceritakan kebutuhanmu supaya orang lain tahu cara membantu.</p><form class="form" onsubmit="createPost(event)"><label>Judul bantuan</label><input id="pt" required placeholder="Contoh: Butuh buku kuliah semester 5"><label>Kategori</label><select id="pc"><option value="pendidikan">Pendidikan</option><option value="barang">Barang</option><option value="makanan">Makanan</option><option value="pekerjaan">Pekerjaan</option><option value="informasi">Informasi</option></select><label>Kota / lokasi</label><input id="pl" required placeholder="Contoh: Medan, North Sumatra"><label>Negara</label><select id="pcountry" required><option>Indonesia</option><option>Malaysia</option><option>Singapore</option><option>Thailand</option><option>Philippines</option><option>India</option><option>Japan</option><option>South Korea</option><option>Australia</option><option>United States</option><option>United Kingdom</option><option>Canada</option><option>Germany</option><option>France</option><option>Other</option></select><label>Deskripsi</label><textarea id="pd" required placeholder="Jelaskan bantuan yang kamu butuhkan..."></textarea><label>Prioritas</label><select id="pu"><option value="normal">Normal</option><option value="penting">Penting</option><option value="mendesak">Mendesak</option></select><button class="primary full">Publikasikan Bantuan</button></form>`)}async function createPost(e){e.preventDefault();try{await api('create_post',{title:pt.value,category:pc.value,location:pl.value,country:pcountry.value,description:pd.value,urgency:pu.value,type:'need'});closeModal();toast('Permintaan bantuan berhasil dibuat 💙','success');loadPosts()}catch(x){toast(x.message,'error')}}
-(async()=>{const u=await me();if(u){const b=document.querySelector('#account');b.textContent='👤 '+u.name.split(' ')[0];b.onclick=()=>location.href='dashboard.html'}loadPosts()})();
-</script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>MINSA — Brain Training 2.0</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+:root{
+    --bg:#060711;
+    --card:rgba(18,20,35,.78);
+    --card2:#101222;
+    --purple:#8b5cf6;
+    --pink:#ec4899;
+    --blue:#38bdf8;
+    --green:#34d399;
+    --yellow:#facc15;
+    --red:#fb7185;
+    --text:#f7f7ff;
+    --muted:#8e94ad;
+    --border:rgba(255,255,255,.09);
+}
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+    min-height:100vh;
+    background:
+        radial-gradient(circle at 5% 10%,rgba(139,92,246,.17),transparent 27%),
+        radial-gradient(circle at 95% 15%,rgba(56,189,248,.12),transparent 27%),
+        radial-gradient(circle at 50% 100%,rgba(236,72,153,.12),transparent 30%),
+        var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    overflow-x:hidden;
+}
+
+button{
+    font-family:inherit;
+}
+
+.bg-orb{
+    position:fixed;
+    width:300px;
+    height:300px;
+    border-radius:50%;
+    filter:blur(110px);
+    opacity:.13;
+    pointer-events:none;
+    z-index:-1;
+}
+
+.orb1{
+    background:#8b5cf6;
+    left:-100px;
+    top:-100px;
+}
+
+.orb2{
+    background:#ec4899;
+    right:-120px;
+    bottom:-120px;
+}
+
+/* NAV */
+
+.app{
+    width:min(1180px,92%);
+    margin:auto;
+}
+
+nav{
+    height:82px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.logo{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    cursor:pointer;
+}
+
+.logo-icon{
+    width:47px;
+    height:47px;
+    border-radius:15px;
+    background:linear-gradient(135deg,#8b5cf6,#ec4899);
+    display:grid;
+    place-items:center;
+    position:relative;
+    box-shadow:0 10px 35px rgba(139,92,246,.35);
+}
+
+.logo-icon::before{
+    content:"";
+    width:25px;
+    height:25px;
+    background:white;
+    border-radius:50%;
+    position:absolute;
+}
+
+.logo-icon::after{
+    content:"M";
+    color:#8b5cf6;
+    font-size:16px;
+    font-weight:900;
+    z-index:2;
+}
+
+.logo-text{
+    font-family:'Space Grotesk';
+    font-size:24px;
+    font-weight:800;
+}
+
+.logo-text span{
+    color:#a78bfa;
+}
+
+.nav-right{
+    display:flex;
+    gap:10px;
+}
+
+.stat-pill{
+    padding:9px 14px;
+    border-radius:30px;
+    background:rgba(255,255,255,.045);
+    border:1px solid var(--border);
+    color:var(--muted);
+    font-size:13px;
+}
+
+.stat-pill b{
+    color:white;
+}
+
+/* HERO */
+
+.hero{
+    padding:60px 0 40px;
+    display:grid;
+    grid-template-columns:1.2fr .8fr;
+    gap:40px;
+    align-items:center;
+}
+
+.badge{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 13px;
+    border-radius:30px;
+    color:#c4b5fd;
+    background:rgba(139,92,246,.12);
+    border:1px solid rgba(139,92,246,.25);
+    font-size:12px;
+    font-weight:700;
+    margin-bottom:20px;
+}
+
+.badge-dot{
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    background:#a78bfa;
+    box-shadow:0 0 15px #a78bfa;
+}
+
+.hero h1{
+    font-family:'Space Grotesk';
+    font-size:clamp(48px,7vw,82px);
+    line-height:.94;
+    letter-spacing:-5px;
+    margin-bottom:22px;
+}
+
+.gradient-text{
+    background:linear-gradient(90deg,#a78bfa,#ec4899,#38bdf8);
+    -webkit-background-clip:text;
+    color:transparent;
+}
+
+.hero p{
+    max-width:570px;
+    color:var(--muted);
+    font-size:16px;
+    line-height:1.8;
+}
+
+/* BRAIN */
+
+.brain-wrap{
+    display:flex;
+    justify-content:center;
+}
+
+.brain{
+    width:270px;
+    height:270px;
+    border-radius:42% 58% 55% 45%;
+    background:
+        radial-gradient(circle at 35% 30%,rgba(255,255,255,.3),transparent 8%),
+        linear-gradient(135deg,rgba(139,92,246,.9),rgba(236,72,153,.8));
+    box-shadow:
+        0 0 80px rgba(139,92,246,.3),
+        inset 0 0 60px rgba(255,255,255,.08);
+    position:relative;
+    animation:floatBrain 5s ease-in-out infinite;
+}
+
+.brain::before,
+.brain::after{
+    content:"";
+    position:absolute;
+    border:3px solid rgba(255,255,255,.35);
+    border-radius:50%;
+}
+
+.brain::before{
+    width:90px;
+    height:150px;
+    left:45px;
+    top:55px;
+    transform:rotate(-20deg);
+}
+
+.brain::after{
+    width:85px;
+    height:150px;
+    right:45px;
+    top:55px;
+    transform:rotate(20deg);
+}
+
+.brain-center{
+    position:absolute;
+    width:10px;
+    height:170px;
+    background:rgba(255,255,255,.3);
+    left:50%;
+    top:55px;
+    transform:translateX(-50%);
+    border-radius:10px;
+}
+
+@keyframes floatBrain{
+    0%,100%{
+        transform:translateY(0) rotate(-2deg);
+    }
+
+    50%{
+        transform:translateY(-15px) rotate(2deg);
+    }
+}
+
+/* SECTIONS */
+
+.section-title{
+    margin:30px 0 18px;
+}
+
+.section-title h2{
+    font-family:'Space Grotesk';
+    font-size:27px;
+}
+
+.section-title p{
+    color:var(--muted);
+    margin-top:5px;
+    font-size:14px;
+}
+
+/* GAME CARDS */
+
+.games{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:15px;
+}
+
+.game-card{
+    padding:23px;
+    min-height:210px;
+    border-radius:23px;
+    background:
+        linear-gradient(145deg,rgba(255,255,255,.065),rgba(255,255,255,.025));
+    border:1px solid var(--border);
+    cursor:pointer;
+    transition:.3s ease;
+    position:relative;
+    overflow:hidden;
+}
+
+.game-card:hover{
+    transform:translateY(-8px) scale(1.01);
+    border-color:rgba(167,139,250,.45);
+    box-shadow:0 25px 60px rgba(0,0,0,.3);
+}
+
+.game-card::after{
+    content:"";
+    position:absolute;
+    width:120px;
+    height:120px;
+    right:-50px;
+    bottom:-50px;
+    border-radius:50%;
+    background:var(--accent);
+    filter:blur(50px);
+    opacity:.18;
+}
+
+.game-icon{
+    width:54px;
+    height:54px;
+    border-radius:17px;
+    display:grid;
+    place-items:center;
+    font-size:25px;
+    background:rgba(255,255,255,.07);
+    margin-bottom:20px;
+}
+
+.game-card h3{
+    font-family:'Space Grotesk';
+    font-size:18px;
+    margin-bottom:8px;
+}
+
+.game-card p{
+    color:var(--muted);
+    font-size:12px;
+    line-height:1.6;
+}
+
+.play{
+    position:absolute;
+    right:18px;
+    top:18px;
+    color:var(--muted);
+    font-size:18px;
+}
+
+/* DAILY */
+
+.daily{
+    margin-top:25px;
+    padding:25px;
+    border-radius:23px;
+    background:
+        linear-gradient(135deg,rgba(139,92,246,.13),rgba(236,72,153,.07));
+    border:1px solid rgba(139,92,246,.2);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:20px;
+}
+
+.daily-left{
+    display:flex;
+    align-items:center;
+    gap:17px;
+}
+
+.daily-icon{
+    width:55px;
+    height:55px;
+    border-radius:17px;
+    display:grid;
+    place-items:center;
+    font-size:25px;
+    background:rgba(255,255,255,.08);
+}
+
+.daily h3{
+    font-family:'Space Grotesk';
+    margin-bottom:5px;
+}
+
+.daily p{
+    color:var(--muted);
+    font-size:12px;
+}
+
+.daily-btn{
+    border:none;
+    padding:12px 20px;
+    border-radius:13px;
+    background:linear-gradient(135deg,#8b5cf6,#ec4899);
+    color:white;
+    font-weight:700;
+    cursor:pointer;
+}
+
+/* DASHBOARD */
+
+.dashboard{
+    margin:25px 0 25px;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:15px;
+}
+
+.dash-card{
+    background:rgba(255,255,255,.035);
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:20px;
+}
+
+.dash-label{
+    color:var(--muted);
+    font-size:11px;
+    letter-spacing:1px;
+}
+
+.dash-value{
+    font-family:'Space Grotesk';
+    font-size:30px;
+    font-weight:700;
+    margin-top:8px;
+}
+
+.progress{
+    height:5px;
+    background:rgba(255,255,255,.08);
+    border-radius:10px;
+    overflow:hidden;
+    margin-top:14px;
+}
+
+.progress span{
+    display:block;
+    height:100%;
+    width:20%;
+    background:linear-gradient(90deg,#8b5cf6,#ec4899);
+    border-radius:10px;
+    transition:.5s;
+}
+
+/* EXTRA STATS */
+
+.extra-stats{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:15px;
+    margin-bottom:60px;
+}
+
+.panel{
+    background:rgba(255,255,255,.035);
+    border:1px solid var(--border);
+    border-radius:22px;
+    padding:23px;
+}
+
+.panel h3{
+    font-family:'Space Grotesk';
+    margin-bottom:18px;
+}
+
+.leader{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:13px 0;
+    border-bottom:1px solid rgba(255,255,255,.05);
+}
+
+.leader:last-child{
+    border-bottom:none;
+}
+
+.rank{
+    display:flex;
+    gap:12px;
+    align-items:center;
+}
+
+.rank-num{
+    width:30px;
+    height:30px;
+    border-radius:10px;
+    display:grid;
+    place-items:center;
+    background:rgba(255,255,255,.06);
+    font-size:12px;
+    font-weight:700;
+}
+
+.leader-name{
+    font-size:13px;
+}
+
+.leader-score{
+    font-family:'Space Grotesk';
+    font-weight:700;
+}
+
+/* ACHIEVEMENT */
+
+.achievement{
+    display:flex;
+    gap:12px;
+    align-items:center;
+    margin-bottom:12px;
+    padding:12px;
+    border-radius:15px;
+    background:rgba(255,255,255,.035);
+    border:1px solid transparent;
+    opacity:.35;
+}
+
+.achievement.unlocked{
+    opacity:1;
+    border-color:rgba(139,92,246,.25);
+    background:rgba(139,92,246,.08);
+}
+
+.achievement-icon{
+    width:40px;
+    height:40px;
+    display:grid;
+    place-items:center;
+    border-radius:12px;
+    background:rgba(255,255,255,.07);
+    font-size:19px;
+}
+
+.achievement-title{
+    font-size:13px;
+    font-weight:700;
+}
+
+.achievement-desc{
+    color:var(--muted);
+    font-size:11px;
+    margin-top:3px;
+}
+
+/* MODAL */
+
+.modal{
+    position:fixed;
+    inset:0;
+    background:rgba(3,4,10,.86);
+    backdrop-filter:blur(15px);
+    z-index:100;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+}
+
+.modal.active{
+    display:flex;
+}
+
+.game-window{
+    width:min(650px,100%);
+    min-height:500px;
+    background:#0c0e1a;
+    border:1px solid rgba(255,255,255,.1);
+    border-radius:28px;
+    box-shadow:0 40px 100px rgba(0,0,0,.6);
+    padding:30px;
+    position:relative;
+    text-align:center;
+    overflow:hidden;
+}
+
+.close{
+    position:absolute;
+    right:20px;
+    top:18px;
+    border:none;
+    background:rgba(255,255,255,.07);
+    color:white;
+    width:38px;
+    height:38px;
+    border-radius:50%;
+    cursor:pointer;
+    font-size:18px;
+    z-index:5;
+}
+
+.game-title{
+    font-family:'Space Grotesk';
+    font-size:27px;
+    margin-bottom:5px;
+}
+
+.game-subtitle{
+    color:var(--muted);
+    font-size:13px;
+}
+
+.game-area{
+    margin-top:25px;
+    min-height:350px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+}
+
+/* BUTTON */
+
+.main-btn{
+    border:none;
+    padding:14px 26px;
+    border-radius:14px;
+    background:linear-gradient(135deg,#8b5cf6,#ec4899);
+    color:white;
+    font-weight:700;
+    cursor:pointer;
+    font-size:14px;
+    box-shadow:0 10px 30px rgba(139,92,246,.25);
+    transition:.2s;
+}
+
+.main-btn:hover{
+    transform:translateY(-3px);
+    box-shadow:0 15px 35px rgba(139,92,246,.35);
+}
+
+/* REACTION */
+
+.reaction-info{
+    display:flex;
+    justify-content:center;
+    gap:35px;
+    margin-bottom:18px;
+}
+
+.game-stat{
+    color:var(--muted);
+    font-size:12px;
+}
+
+.game-stat b{
+    display:block;
+    color:white;
+    font-size:20px;
+    margin-top:3px;
+}
+
+.reaction-box{
+    width:100%;
+    height:245px;
+    border-radius:22px;
+    background:#171a2b;
+    position:relative;
+    overflow:hidden;
+    user-select:none;
+}
+
+.reaction-message{
+    position:absolute;
+    inset:0;
+    display:grid;
+    place-items:center;
+    font-family:'Space Grotesk';
+    font-size:23px;
+    font-weight:700;
+    z-index:1;
+}
+
+.reaction-target{
+    position:absolute;
+    width:65px;
+    height:65px;
+    border-radius:50%;
+    background:linear-gradient(135deg,#ec4899,#8b5cf6);
+    box-shadow:0 0 35px rgba(236,72,153,.7);
+    cursor:pointer;
+    display:none;
+    animation:targetPulse .8s infinite alternate;
+}
+
+@keyframes targetPulse{
+    from{
+        transform:scale(.92);
+    }
+
+    to{
+        transform:scale(1.08);
+    }
+}
+
+/* MATRIX */
+
+.matrix-info{
+    display:flex;
+    justify-content:center;
+    gap:30px;
+    margin-bottom:20px;
+}
+
+.matrix-grid{
+    display:grid;
+    gap:9px;
+}
+
+.matrix-cell{
+    border:none;
+    width:72px;
+    height:72px;
+    border-radius:14px;
+    background:rgba(255,255,255,.055);
+    border:1px solid rgba(255,255,255,.06);
+    cursor:pointer;
+    transition:.12s;
+}
+
+.matrix-cell:hover{
+    background:rgba(255,255,255,.09);
+}
+
+.matrix-cell.lit{
+    background:linear-gradient(135deg,#8b5cf6,#ec4899);
+    box-shadow:0 0 30px rgba(139,92,246,.6);
+    transform:scale(1.04);
+}
+
+.matrix-cell.correct{
+    background:#10b981;
+    box-shadow:0 0 30px rgba(16,185,129,.5);
+}
+
+.matrix-cell.wrong{
+    background:#ef4444;
+    box-shadow:0 0 30px rgba(239,68,68,.5);
+}
+
+/* NUMBER */
+
+.number-display{
+    font-family:'Space Grotesk';
+    font-size:48px;
+    font-weight:800;
+    letter-spacing:8px;
+    margin-bottom:25px;
+}
+
+.number-input{
+    width:100%;
+    max-width:350px;
+    padding:15px;
+    background:rgba(255,255,255,.06);
+    border:1px solid var(--border);
+    border-radius:13px;
+    color:white;
+    outline:none;
+    text-align:center;
+    font-size:18px;
+}
+
+.number-input:focus{
+    border-color:#8b5cf6;
+    box-shadow:0 0 20px rgba(139,92,246,.15);
+}
+
+/* FOCUS */
+
+.focus-area{
+    width:100%;
+    height:320px;
+    position:relative;
+    overflow:hidden;
+    border-radius:20px;
+    background:
+        radial-gradient(circle,rgba(139,92,246,.07),transparent 40%),
+        rgba(255,255,255,.025);
+}
+
+.focus-target{
+    width:62px;
+    height:62px;
+    border-radius:50%;
+    background:linear-gradient(135deg,#38bdf8,#8b5cf6);
+    box-shadow:0 0 50px rgba(56,189,248,.5);
+    cursor:pointer;
+    position:absolute;
+    animation:targetPulse .8s infinite alternate;
+}
+
+/* RESULT */
+
+.result-score{
+    font-family:'Space Grotesk';
+    font-size:75px;
+    font-weight:800;
+    background:linear-gradient(90deg,#a78bfa,#ec4899);
+    -webkit-background-clip:text;
+    color:transparent;
+}
+
+.result-message{
+    color:var(--muted);
+    margin:10px 0 25px;
+}
+
+.result-icon{
+    font-size:50px;
+    margin-bottom:10px;
+}
+
+/* POPUP */
+
+.toast{
+    position:fixed;
+    right:25px;
+    bottom:25px;
+    z-index:500;
+    background:#151829;
+    border:1px solid rgba(255,255,255,.1);
+    border-radius:17px;
+    padding:14px 18px;
+    box-shadow:0 20px 50px rgba(0,0,0,.4);
+    transform:translateY(100px);
+    opacity:0;
+    transition:.4s;
+    pointer-events:none;
+}
+
+.toast.show{
+    transform:translateY(0);
+    opacity:1;
+}
+
+.toast-title{
+    font-size:13px;
+    font-weight:800;
+}
+
+.toast-text{
+    color:var(--muted);
+    font-size:11px;
+    margin-top:3px;
+}
+
+/* PARTICLES */
+
+.particle{
+    position:fixed;
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    pointer-events:none;
+    z-index:1000;
+    animation:particleFly 800ms ease-out forwards;
+}
+
+@keyframes particleFly{
+    from{
+        transform:translate(0,0) scale(1);
+        opacity:1;
+    }
+
+    to{
+        transform:translate(var(--x),var(--y)) scale(0);
+        opacity:0;
+    }
+}
+
+/* FOOTER */
+
+footer{
+    border-top:1px solid var(--border);
+    padding:25px 0 40px;
+    color:var(--muted);
+    font-size:12px;
+    text-align:center;
+}
+
+footer b{
+    color:#c4b5fd;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:900px){
+
+    .hero{
+        grid-template-columns:1fr;
+        text-align:center;
+    }
+
+    .hero p{
+        margin:auto;
+    }
+
+    .brain-wrap{
+        display:none;
+    }
+
+    .games{
+        grid-template-columns:repeat(2,1fr);
+    }
+}
+
+@media(max-width:650px){
+
+    nav{
+        height:70px;
+    }
+
+    .nav-right .stat-pill:nth-child(2){
+        display:none;
+    }
+
+    .hero{
+        padding-top:35px;
+    }
+
+    .hero h1{
+        font-size:55px;
+        letter-spacing:-4px;
+    }
+
+    .games{
+        grid-template-columns:1fr;
+    }
+
+    .dashboard{
+        grid-template-columns:1fr;
+    }
+
+    .extra-stats{
+        grid-template-columns:1fr;
+    }
+
+    .daily{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+
+    .game-window{
+        padding:22px;
+        min-height:470px;
+    }
+
+    .matrix-cell{
+        width:60px;
+        height:60px;
+    }
+
+    .reaction-box{
+        height:220px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="bg-orb orb1"></div>
+<div class="bg-orb orb2"></div>
+
+<div class="app">
+
+<!-- NAV -->
+<nav>
+
+    <div class="logo" onclick="location.reload()">
+        <div class="logo-icon"></div>
+        <div class="logo-text">
+            <span>MINSA</span>
+        </div>
+    </div>
+
+    <div class="nav-right">
+
+        <div class="stat-pill">
+            🔥 Streak <b id="streak">0</b>
+        </div>
+
+        <div class="stat-pill">
+            🏆 Best <b id="bestNav">0</b>
+        </div>
+
+    </div>
+
+</nav>
+
+
+<!-- HERO -->
+<section class="hero">
+
+    <div>
+
+        <div class="badge">
+            <span class="badge-dot"></span>
+            TRAIN YOUR BRAIN
+        </div>
+
+        <h1>
+            Make your<br>
+            brain <span class="gradient-text">faster.</span>
+        </h1>
+
+        <p>
+            Latih memori, kecepatan reaksi, fokus, dan kemampuan
+            berpikir melalui mini games singkat. Main sebentar,
+            tingkatkan kemampuanmu sedikit demi sedikit.
+        </p>
+
+    </div>
+
+    <div class="brain-wrap">
+        <div class="brain">
+            <div class="brain-center"></div>
+        </div>
+    </div>
+
+</section>
+
+
+<!-- GAMES -->
+
+<div class="section-title">
+    <h2>Choose your challenge</h2>
+    <p>Pilih latihan dan lihat seberapa cepat otakmu bekerja.</p>
+</div>
+
+
+<div class="games">
+
+    <div
+        class="game-card"
+        style="--accent:#ec4899"
+        onclick="openGame('reaction')"
+    >
+
+        <div class="play">→</div>
+
+        <div class="game-icon">⚡</div>
+
+        <h3>Reaction Rush</h3>
+
+        <p>
+            Tunggu target muncul lalu klik secepat mungkin.
+            Jangan sampai salah klik.
+        </p>
+
+    </div>
+
+
+    <div
+        class="game-card"
+        style="--accent:#8b5cf6"
+        onclick="openGame('number')"
+    >
+
+        <div class="play">→</div>
+
+        <div class="game-icon">🔢</div>
+
+        <h3>Number Memory</h3>
+
+        <p>
+            Ingat angka yang muncul sebelum semuanya menghilang.
+        </p>
+
+    </div>
+
+
+    <div
+        class="game-card"
+        style="--accent:#38bdf8"
+        onclick="openGame('sequence')"
+    >
+
+        <div class="play">→</div>
+
+        <div class="game-icon">🧩</div>
+
+        <h3>Memory Matrix</h3>
+
+        <p>
+            Ingat pola kotak yang menyala dan ulangi dengan benar.
+        </p>
+
+    </div>
+
+
+    <div
+        class="game-card"
+        style="--accent:#34d399"
+        onclick="openGame('focus')"
+    >
+
+        <div class="play">→</div>
+
+        <div class="game-icon">🎯</div>
+
+        <h3>Focus</h3>
+
+        <p>
+            Tangkap target yang terus berpindah sebelum waktu habis.
+        </p>
+
+    </div>
+
+</div>
+
+
+<!-- DAILY CHALLENGE -->
+
+<div class="daily">
+
+    <div class="daily-left">
+
+        <div class="daily-icon">🔥</div>
+
+        <div>
+
+            <h3>Daily Challenge</h3>
+
+            <p id="dailyText">
+                Tantangan hari ini siap dimainkan.
+            </p>
+
+        </div>
+
+    </div>
+
+    <button class="daily-btn" onclick="openDaily()">
+        PLAY TODAY
+    </button>
+
+</div>
+
+
+<!-- STATS -->
+
+<div class="section-title">
+
+    <h2>Your brain stats</h2>
+
+    <p>
+        Progress latihanmu tersimpan otomatis di browser.
+    </p>
+
+</div>
+
+
+<div class="dashboard">
+
+    <div class="dash-card">
+
+        <div class="dash-label">
+            TOTAL GAMES
+        </div>
+
+        <div
+            class="dash-value"
+            id="totalGames"
+        >
+            0
+        </div>
+
+    </div>
+
+
+    <div class="dash-card">
+
+        <div class="dash-label">
+            BEST SCORE
+        </div>
+
+        <div
+            class="dash-value"
+            id="bestScore"
+        >
+            0
+        </div>
+
+    </div>
+
+
+    <div class="dash-card">
+
+        <div class="dash-label">
+            BRAIN LEVEL
+        </div>
+
+        <div
+            class="dash-value"
+            id="level"
+        >
+            Beginner
+        </div>
+
+        <div class="progress">
+            <span id="levelProgress"></span>
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- EXTRA -->
+
+<div class="extra-stats">
+
+    <!-- LEADERBOARD -->
+
+    <div class="panel">
+
+        <h3>🏆 Local Leaderboard</h3>
+
+        <div class="leader">
+
+            <div class="rank">
+                <div class="rank-num">1</div>
+                <div class="leader-name">
+                    You
+                </div>
+            </div>
+
+            <div
+                class="leader-score"
+                id="leader1"
+            >
+                0
+            </div>
+
+        </div>
+
+
+        <div class="leader">
+
+            <div class="rank">
+                <div class="rank-num">2</div>
+                <div class="leader-name">
+                    Future You
+                </div>
+            </div>
+
+            <div
+                class="leader-score"
+                id="leader2"
+            >
+                0
+            </div>
+
+        </div>
+
+
+        <div class="leader">
+
+            <div class="rank">
+                <div class="rank-num">3</div>
+                <div class="leader-name">
+                    Brain Mode
+                </div>
+            </div>
+
+            <div
+                class="leader-score"
+                id="leader3"
+            >
+                0
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ACHIEVEMENTS -->
+
+    <div class="panel">
+
+        <h3>🏅 Achievements</h3>
+
+
+        <div
+            class="achievement"
+            id="achievement1"
+        >
+
+            <div class="achievement-icon">
+                🚀
+            </div>
+
+            <div>
+
+                <div class="achievement-title">
+                    First Step
+                </div>
+
+                <div class="achievement-desc">
+                    Play your first game
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div
+            class="achievement"
+            id="achievement2"
+        >
+
+            <div class="achievement-icon">
+                ⚡
+            </div>
+
+            <div>
+
+                <div class="achievement-title">
+                    Speed Demon
+                </div>
+
+                <div class="achievement-desc">
+                    Score 100 points
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div
+            class="achievement"
+            id="achievement3"
+        >
+
+            <div class="achievement-icon">
+                🧠
+            </div>
+
+            <div>
+
+                <div class="achievement-title">
+                    Brain Master
+                </div>
+
+                <div class="achievement-desc">
+                    Reach 500 total points
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div
+            class="achievement"
+            id="achievement4"
+        >
+
+            <div class="achievement-icon">
+                    🔥
+            </div>
+
+            <div>
+
+                <div class="achievement-title">
+                    Dedicated
+                </div>
+
+                <div class="achievement-desc">
+                    Play 10 games
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<footer>
+    Built with 🧠 by <b>Manisa</b> · MINSA Brain Training
+</footer>
+
+</div>
+
+
+<!-- GAME MODAL -->
+
+<div
+    class="modal"
+    id="modal"
+>
+
+    <div class="game-window">
+
+        <button
+            class="close"
+            onclick="closeGame()"
+        >
+            ×
+        </button>
+
+        <div
+            class="game-title"
+            id="gameTitle"
+        >
+            Game
+        </div>
+
+        <div
+            class="game-subtitle"
+            id="gameSubtitle"
+        >
+            Challenge yourself
+        </div>
+
+        <div
+            class="game-area"
+            id="gameArea"
+        ></div>
+
+    </div>
+
+</div>
+
+
+<!-- TOAST -->
+
+<div
+    class="toast"
+    id="toast"
+>
+
+    <div
+        class="toast-title"
+        id="toastTitle"
+    >
+        Achievement!
+    </div>
+
+    <div
+        class="toast-text"
+        id="toastText"
+    >
+        You unlocked something.
+    </div>
+
+</div>
+
+
+<script>
+
+/* =========================================
+   DATA
+========================================= */
+
+let totalGames =
+    Number(localStorage.getItem("minsaGames")) || 0;
+
+let bestScore =
+    Number(localStorage.getItem("minsaBest")) || 0;
+
+let totalPoints =
+    Number(localStorage.getItem("minsaPoints")) || 0;
+
+let streak =
+    Number(localStorage.getItem("minsaStreak")) || 0;
+
+let timers = [];
+
+let currentGame = null;
+
+
+/* =========================================
+   ELEMENTS
+========================================= */
+
+const modal =
+    document.getElementById("modal");
+
+const gameArea =
+    document.getElementById("gameArea");
+
+const gameTitle =
+    document.getElementById("gameTitle");
+
+const gameSubtitle =
+    document.getElementById("gameSubtitle");
+
+
+/* =========================================
+   UPDATE UI
+========================================= */
+
+function updateUI(){
+
+    document.getElementById("totalGames").innerText =
+        totalGames;
+
+    document.getElementById("bestScore").innerText =
+        bestScore;
+
+    document.getElementById("bestNav").innerText =
+        bestScore;
+
+    document.getElementById("streak").innerText =
+        streak;
+
+    updateLevel();
+    updateLeaderboard();
+    updateAchievements();
+}
+
+
+/* =========================================
+   LEVEL
+========================================= */
+
+function updateLevel(){
+
+    const level =
+        document.getElementById("level");
+
+    const progress =
+        document.getElementById("levelProgress");
+
+    if(bestScore < 20){
+
+        level.innerText = "Beginner";
+        progress.style.width = "20%";
+
+    }else if(bestScore < 50){
+
+        level.innerText = "Thinker";
+        progress.style.width = "40%";
+
+    }else if(bestScore < 100){
+
+        level.innerText = "Smart";
+        progress.style.width = "60%";
+
+    }else if(bestScore < 200){
+
+        level.innerText = "Advanced";
+        progress.style.width = "80%";
+
+    }else{
+
+        level.innerText = "Genius";
+        progress.style.width = "100%";
+
+    }
+
+}
+
+
+/* =========================================
+   LEADERBOARD
+========================================= */
+
+function updateLeaderboard(){
+
+    document.getElementById("leader1").innerText =
+        bestScore;
+
+    document.getElementById("leader2").innerText =
+        Math.max(0,bestScore-12);
+
+    document.getElementById("leader3").innerText =
+        Math.max(0,bestScore-25);
+
+}
+
+
+/* =========================================
+   ACHIEVEMENTS
+========================================= */
+
+function updateAchievements(){
+
+    const achievement1 =
+        document.getElementById("achievement1");
+
+    const achievement2 =
+        document.getElementById("achievement2");
+
+    const achievement3 =
+        document.getElementById("achievement3");
+
+    const achievement4 =
+        document.getElementById("achievement4");
+
+
+    // FIRST STEP
+    if(totalGames >= 1){
+        achievement1.classList.add("unlocked");
+    }else{
+        achievement1.classList.remove("unlocked");
+    }
+
+
+    // SPEED DEMON
+    if(bestScore >= 100){
+        achievement2.classList.add("unlocked");
+    }else{
+        achievement2.classList.remove("unlocked");
+    }
+
+
+    // BRAIN MASTER
+    if(totalPoints >= 500){
+        achievement3.classList.add("unlocked");
+    }else{
+        achievement3.classList.remove("unlocked");
+    }
+
+
+    // DEDICATED
+    if(totalGames >= 10){
+        achievement4.classList.add("unlocked");
+    }else{
+        achievement4.classList.remove("unlocked");
+    }
+
+}
+      
+
+
+/* =========================================
+   TIMER SYSTEM
+========================================= */
+
+function addTimeout(fn,time){
+
+    const id =
+        setTimeout(fn,time);
+
+    timers.push({
+        type:"timeout",
+        id:id
+    });
+
+    return id;
+}
+
+
+function addInterval(fn,time){
+
+    const id =
+        setInterval(fn,time);
+
+    timers.push({
+        type:"interval",
+        id:id
+    });
+
+    return id;
+}
+
+
+function clearTimers(){
+
+    timers.forEach(timer => {
+
+        if(timer.type === "interval"){
+
+            clearInterval(timer.id);
+
+        }else{
+
+            clearTimeout(timer.id);
+
+        }
+
+    });
+
+    timers = [];
+
+}
+
+
+/* =========================================
+   OPEN / CLOSE
+========================================= */
+
+function openGame(game){
+
+    clearTimers();
+
+    currentGame = game;
+
+    modal.classList.add("active");
+
+    if(game === "reaction"){
+        reactionGame();
+    }
+
+    if(game === "number"){
+        numberGame();
+    }
+
+    if(game === "sequence"){
+        sequenceGame();
+    }
+
+    if(game === "focus"){
+        focusGame();
+    }
+
+}
+
+
+function closeGame(){
+
+    clearTimers();
+
+    modal.classList.remove("active");
+
+    currentGame = null;
+
+}
+
+
+/* =========================================
+   FINISH GAME
+========================================= */
+
+function finishGame(score){
+
+    const oldTotalPoints = totalPoints;
+
+    totalGames++;
+
+    totalPoints += score;
+
+    if(score > bestScore){
+        bestScore = score;
+    }
+
+    streak++;
+
+    localStorage.setItem(
+        "minsaGames",
+        totalGames
+    );
+
+    localStorage.setItem(
+        "minsaBest",
+        bestScore
+    );
+
+    localStorage.setItem(
+        "minsaPoints",
+        totalPoints
+    );
+
+    localStorage.setItem(
+        "minsaStreak",
+        streak
+    );
+
+    updateUI();
+
+
+    // =========================
+    // ACHIEVEMENT CHECK
+    // =========================
+
+    if(oldTotalPoints < 500 && totalPoints >= 500){
+
+        showToast(
+            "🧠 BRAIN MASTER!",
+            "Kamu berhasil mengumpulkan 500 total points!"
+        );
+
+        particles(
+            window.innerWidth / 2,
+            window.innerHeight / 2
+        );
+
+    }
+
+}
+
+
+/* =========================================
+   ACHIEVEMENTS POPUP
+========================================= */
+
+function checkAchievements(){
+
+    if(totalGames === 1){
+
+        showToast(
+            "🏅 First Step!",
+            "Kamu memainkan game pertamamu."
+        );
+
+    }
+
+    if(bestScore >= 100 && bestScore === totalPoints){
+
+        showToast(
+            "⚡ Speed Demon!",
+            "Kamu berhasil mencapai 100 skor."
+        );
+
+    }
+
+    if(totalPoints >= 500){
+
+        showToast(
+            "🧠 Brain Master!",
+            "Total skor kamu sudah mencapai 500."
+        );
+
+    }
+
+    if(totalGames === 10){
+
+        showToast(
+            "🔥 Dedicated!",
+            "10 game sudah dimainkan!"
+        );
+
+    }
+
+}
+
+
+function showToast(title,text){
+
+    const toast =
+        document.getElementById("toast");
+
+    document.getElementById("toastTitle")
+        .innerText = title;
+
+    document.getElementById("toastText")
+        .innerText = text;
+
+    toast.classList.add("show");
+
+    setTimeout(() => {
+
+        toast.classList.remove("show");
+
+    },3000);
+
+}
+
+
+/* =========================================
+   PARTICLES
+========================================= */
+
+function particles(x,y){
+
+    for(let i=0;i<18;i++){
+
+        const p =
+            document.createElement("div");
+
+        p.className = "particle";
+
+        p.style.left = x + "px";
+        p.style.top = y + "px";
+
+        p.style.setProperty(
+            "--x",
+            ((Math.random()-.5)*180) + "px"
+        );
+
+        p.style.setProperty(
+            "--y",
+            ((Math.random()-.5)*180) + "px"
+        );
+
+        document.body.appendChild(p);
+
+        setTimeout(() => {
+
+            p.remove();
+
+        },850);
+
+    }
+
+}
+
+
+/* =========================================
+   RESULT
+========================================= */
+
+function showResult(score,message,icon="🧠"){
+
+    clearTimers();
+
+    finishGame(score);
+
+    gameArea.innerHTML = `
+
+        <div class="result-icon">
+            ${icon}
+        </div>
+
+        <div class="result-score">
+            ${score}
+        </div>
+
+        <div class="result-message">
+            ${message}
+        </div>
+
+        <button
+            class="main-btn"
+            onclick="openGame('${currentGame}')"
+        >
+            PLAY AGAIN
+        </button>
+
+    `;
+
+}
+
+
+/* =========================================
+   REACTION RUSH
+========================================= */
+
+function reactionGame(){
+
+    gameTitle.innerText =
+        "⚡ Reaction Rush";
+
+    gameSubtitle.innerText =
+        "React secepat mungkin ketika target muncul.";
+
+    gameArea.innerHTML = `
+
+        <div class="reaction-info">
+
+            <div class="game-stat">
+                ROUND
+                <b id="reactionRound">1/10</b>
+            </div>
+
+            <div class="game-stat">
+                SCORE
+                <b id="reactionScore">0</b>
+            </div>
+
+            <div class="game-stat">
+                COMBO
+                <b id="reactionCombo">0🔥</b>
+            </div>
+
+        </div>
+
+        <div
+            class="reaction-box"
+            id="reactionBox"
+        >
+
+            <div
+                class="reaction-message"
+                id="reactionMessage"
+            >
+                GET READY...
+            </div>
+
+            <div
+                class="reaction-target"
+                id="reactionTarget"
+            ></div>
+
+        </div>
+
+    `;
+
+    let round = 1;
+    let score = 0;
+    let combo = 0;
+    let startTime = 0;
+    let waiting = false;
+
+    const box =
+        document.getElementById("reactionBox");
+
+    const target =
+        document.getElementById("reactionTarget");
+
+    const message =
+        document.getElementById("reactionMessage");
+
+
+    function nextRound(){
+
+        if(round > 10){
+
+            showResult(
+                score,
+                `Reaction kamu selesai dengan ${combo} combo terakhir!`,
+                "⚡"
+            );
+
+            return;
+
+        }
+
+        waiting = true;
+
+        target.style.display = "none";
+
+        message.innerText =
+            "WAIT FOR IT...";
+
+        box.style.background = "#171a2b";
+
+        const delay =
+            700 + Math.random()*1800;
+
+        addTimeout(() => {
+
+            if(currentGame !== "reaction"){
+                return;
+            }
+
+            message.innerText = "";
+
+            target.style.display = "block";
+
+            const boxRect =
+                box.getBoundingClientRect();
+
+            const targetSize =
+                Math.max(
+                    42,
+                    70 - round*2
+                );
+
+            target.style.width =
+                targetSize + "px";
+
+            target.style.height =
+                targetSize + "px";
+
+            const maxX =
+                box.clientWidth - targetSize;
+
+            const maxY =
+                box.clientHeight - targetSize;
+
+            target.style.left =
+                Math.random()*maxX + "px";
+
+            target.style.top =
+                Math.random()*maxY + "px";
+
+            startTime =
+                performance.now();
+
+            waiting = false;
+
+        },delay);
+
+    }
+
+
+    target.addEventListener("click",e => {
+
+        e.stopPropagation();
+
+        if(waiting){
+            return;
+        }
+
+        const reaction =
+            Math.round(
+                performance.now()-startTime
+            );
+
+        combo++;
+
+        let points =
+            Math.max(
+                5,
+                100-Math.floor(reaction/8)
+            );
+
+        points += combo*3;
+
+        score += points;
+
+        particles(
+            e.clientX,
+            e.clientY
+        );
+
+        document.getElementById(
+            "reactionScore"
+        ).innerText = score;
+
+        document.getElementById(
+            "reactionCombo"
+        ).innerText = combo + "🔥";
+
+        document.getElementById(
+            "reactionRound"
+        ).innerText =
+            `${round}/10`;
+
+        target.style.display = "none";
+
+        message.innerHTML =
+            `${reaction} ms<br><small>+${points} points</small>`;
+
+        box.style.background =
+            "#064e3b";
+
+        round++;
+
+        addTimeout(
+            nextRound,
+            650
+        );
+
+    });
+
+
+    box.addEventListener("click",e => {
+
+        if(
+            e.target === target ||
+            !target.style.display ||
+            target.style.display === "none"
+        ){
+            return;
+        }
+
+        combo = 0;
+
+        document.getElementById(
+            "reactionCombo"
+        ).innerText = "0🔥";
+
+        message.innerText =
+            "TOO SOON 😭";
+
+        box.style.background =
+            "#7f1d1d";
+
+    });
+
+
+    nextRound();
+
+}
+
+
+/* =========================================
+   NUMBER MEMORY
+========================================= */
+
+function numberGame(){
+
+    gameTitle.innerText =
+        "🔢 Number Memory";
+
+    gameSubtitle.innerText =
+        "Ingat angka selama mungkin.";
+
+    let level = 3;
+    let currentNumber = "";
+    let timeoutId;
+
+    function showNumber(){
+
+        clearTimers();
+
+        currentNumber =
+            randomNumber(level);
+
+        gameArea.innerHTML = `
+
+            <div class="game-stat">
+                LEVEL
+                <b>${level}</b>
+            </div>
+
+            <div class="number-display">
+                ${currentNumber}
+            </div>
+
+            <p style="
+                color:#8e94ad;
+                margin-bottom:20px;
+                font-size:13px;
+            ">
+                Hafalkan angka ini...
+            </p>
+
+        `;
+
+        timeoutId =
+            addTimeout(() => {
+
+                gameArea.innerHTML = `
+
+                    <p style="
+                        color:#8e94ad;
+                        margin-bottom:15px;
+                    ">
+                        Ketik angka yang kamu ingat
+                    </p>
+
+                    <input
+                        class="number-input"
+                        id="numberInput"
+                        inputmode="numeric"
+                        autocomplete="off"
+                        placeholder="Masukkan angka..."
+                    >
+
+                    <br><br>
+
+                    <button
+                        class="main-btn"
+                        id="numberSubmit"
+                    >
+                        CHECK
+                    </button>
+
+                `;
+
+                const input =
+                    document.getElementById(
+                        "numberInput"
+                    );
+
+                input.focus();
+
+                document
+                .getElementById("numberSubmit")
+                .onclick = check;
+
+                input.addEventListener(
+                    "keydown",
+                    e => {
+
+                        if(e.key === "Enter"){
+                            check();
+                        }
+
+                    }
+                );
+
+            },Math.max(1200,level*650));
+
+    }
+
+
+    function check(){
+
+        const input =
+            document.getElementById(
+                "numberInput"
+            );
+
+        if(!input){
+            return;
+        }
+
+        if(
+            input.value.trim() ===
+            currentNumber
+        ){
+
+            level++;
+
+            if(level > 10){
+
+                showResult(
+                    150,
+                    "Memory kamu gila! Kamu berhasil melewati semua level.",
+                    "🧠"
+                );
+
+                return;
+
+            }
+
+            gameArea.innerHTML = `
+
+                <div class="result-icon">
+                    ✅
+                </div>
+
+                <h3 style="
+                    font-family:'Space Grotesk';
+                    margin-bottom:10px;
+                ">
+                    CORRECT!
+                </h3>
+
+                <p style="
+                    color:#8e94ad;
+                    margin-bottom:20px;
+                ">
+                    Naik ke level ${level}
+                </p>
+
+                <button
+                    class="main-btn"
+                    id="nextNumber"
+                >
+                    NEXT
+                </button>
+
+            `;
+
+            document
+            .getElementById("nextNumber")
+            .onclick = showNumber;
+
+        }else{
+
+            const score =
+                Math.max(5,level*10);
+
+            showResult(
+                score,
+                `Angka yang benar adalah ${currentNumber}.`,
+                "💥"
+            );
+
+        }
+
+    }
+
+
+    showNumber();
+
+}
+
+
+/* =========================================
+   RANDOM NUMBER
+========================================= */
+
+function randomNumber(length){
+
+    let result = "";
+
+    for(
+        let i=0;
+        i<length;
+        i++
+    ){
+
+        result +=
+            Math.floor(
+                Math.random()*10
+            );
+
+    }
+
+    return result;
+
+}
+
+
+/* =========================================
+   MEMORY MATRIX
+========================================= */
+
+function sequenceGame(){
+
+    gameTitle.innerText =
+        "🧩 Memory Matrix";
+
+    gameSubtitle.innerText =
+        "Ingat pola yang menyala.";
+
+    let level = 1;
+    let lives = 3;
+    let score = 0;
+    let gridSize = 3;
+    let pattern = [];
+    let playerIndex = 0;
+    let locked = true;
+
+
+    function build(){
+
+        gridSize =
+            level >= 10
+            ? 5
+            : level >= 5
+            ? 4
+            : 3;
+
+        const total =
+            gridSize*gridSize;
+
+        const patternLength =
+            Math.min(
+                2+Math.floor(level/2),
+                total-1
+            );
+
+        pattern = [];
+
+        while(
+            pattern.length <
+            patternLength
+        ){
+
+            const n =
+                Math.floor(
+                    Math.random()*total
+                );
+
+            if(!pattern.includes(n)){
+                pattern.push(n);
+            }
+
+        }
+
+        playerIndex = 0;
+        locked = true;
+
+        render();
+
+        showPattern();
+
+    }
+
+
+    function render(){
+
+        gameArea.innerHTML = `
+
+            <div class="matrix-info">
+
+                <div class="game-stat">
+                    LEVEL
+                    <b>${level}</b>
+                </div>
+
+                <div class="game-stat">
+                    SCORE
+                    <b>${score}</b>
+                </div>
+
+                <div class="game-stat">
+                    LIVES
+                    <b>${"❤️".repeat(lives)}</b>
+                </div>
+
+            </div>
+
+            <div
+                class="matrix-grid"
+                id="matrixGrid"
+                style="
+                    grid-template-columns:
+                    repeat(${gridSize},1fr)
+                "
+            ></div>
+
+        `;
+
+        const grid =
+            document.getElementById(
+                "matrixGrid"
+            );
+
+        for(
+            let i=0;
+            i<gridSize*gridSize;
+            i++
+        ){
+
+            const cell =
+                document.createElement("button");
+
+            cell.className =
+                "matrix-cell";
+
+            cell.dataset.index =
+                i;
+
+            cell.onclick =
+                () => clickCell(cell,i);
+
+            grid.appendChild(cell);
+
+        }
+
+    }
+
+
+    function showPattern(){
+
+        const cells =
+            document.querySelectorAll(
+                ".matrix-cell"
+            );
+
+        let index = 0;
+
+        function light(){
+
+            if(index >= pattern.length){
+
+                addTimeout(() => {
+
+                    cells.forEach(cell => {
+
+                        cell.classList.remove(
+                            "lit"
+                        );
+
+                    });
+
+                    locked = false;
+
+                },450);
+
+                return;
+
+            }
+
+            const cell =
+                cells[pattern[index]];
+
+            cell.classList.add("lit");
+
+            addTimeout(() => {
+
+                cell.classList.remove(
+                    "lit"
+                );
+
+                index++;
+
+                addTimeout(
+                    light,
+                    130
+                );
+
+            },480);
+
+        }
+
+        addTimeout(
+            light,
+            500
+        );
+
+    }
+
+
+    function clickCell(cell,index){
+
+        if(locked){
+            return;
+        }
+
+        if(index === pattern[playerIndex]){
+
+            cell.classList.add("correct");
+
+            particles(
+                cell.getBoundingClientRect().left+
+                cell.offsetWidth/2,
+
+                cell.getBoundingClientRect().top+
+                cell.offsetHeight/2
+            );
+
+            playerIndex++;
+
+            if(
+                playerIndex >=
+                pattern.length
+            ){
+
+                locked = true;
+
+                score +=
+                    10 + level*5;
+
+                level++;
+
+                gameArea
+                .querySelectorAll(
+                    ".matrix-cell"
+                )
+                .forEach(c => {
+
+                    c.classList.add("correct");
+
+                });
+
+                addTimeout(
+                    build,
+                    700
+                );
+
+            }
+
+        }else{
+
+            cell.classList.add("wrong");
+
+            lives--;
+
+            locked = true;
+
+            if(lives <= 0){
+
+                showResult(
+                    score,
+                    `Kamu bertahan sampai level ${level}.`,
+                    "💥"
+                );
+
+            }else{
+
+                addTimeout(
+                    build,
+                    700
+                );
+
+            }
+
+        }
+
+    }
+
+
+    build();
+
+}
+
+
+/* =========================================
+   FOCUS
+========================================= */
+
+function focusGame(){
+
+    gameTitle.innerText =
+        "🎯 Focus";
+
+    gameSubtitle.innerText =
+        "Tangkap target sebanyak mungkin.";
+
+    let score = 0;
+    let time = 20;
+    let running = false;
+
+    gameArea.innerHTML = `
+
+        <div class="game-stat">
+            TIME
+            <b id="focusTime">
+                20
+            </b>
+        </div>
+
+        <br>
+
+        <div
+            class="focus-area"
+            id="focusArea"
+        >
+
+            <div
+                class="focus-target"
+                id="focusTarget"
+            ></div>
+
+        </div>
+
+        <br>
+
+        <div class="game-stat">
+            SCORE
+            <b id="focusScore">
+                0
+            </b>
+        </div>
+
+    `;
+
+    const area =
+        document.getElementById(
+            "focusArea"
+        );
+
+    const target =
+        document.getElementById(
+            "focusTarget"
+        );
+
+    target.style.display = "none";
+
+    function moveTarget(){
+
+        const maxX =
+            area.clientWidth-62;
+
+        const maxY =
+            area.clientHeight-62;
+
+        target.style.left =
+            Math.random()*maxX + "px";
+
+        target.style.top =
+            Math.random()*maxY + "px";
+
+    }
+
+
+    addTimeout(() => {
+
+        running = true;
+
+        target.style.display =
+            "block";
+
+        moveTarget();
+
+    },800);
+
+
+    target.onclick = e => {
+
+        if(!running){
+            return;
+        }
+
+        score++;
+
+        document.getElementById(
+            "focusScore"
+        ).innerText = score;
+
+        particles(
+            e.clientX,
+            e.clientY
+        );
+
+        moveTarget();
+
+    };
+
+
+    addInterval(() => {
+
+        if(!running){
+            return;
+        }
+
+        time--;
+
+        document.getElementById(
+            "focusTime"
+        ).innerText = time;
+
+        if(time <= 0){
+
+            running = false;
+
+            target.style.display =
+                "none";
+
+            showResult(
+                score*10,
+                `Kamu menangkap ${score} target.`,
+                "🎯"
+            );
+
+        }
+
+    },1000);
+
+}
+
+
+/* =========================================
+   DAILY CHALLENGE
+========================================= */
+
+function getToday(){
+
+    const date =
+        new Date();
+
+    return (
+        date.getFullYear() +
+        "-" +
+        (date.getMonth()+1) +
+        "-" +
+        date.getDate()
+    );
+
+}
+
+
+function openDaily(){
+
+    const today =
+        getToday();
+
+    const last =
+        localStorage.getItem(
+            "minsaDaily"
+        );
+
+    if(last === today){
+
+        showToast(
+            "🔥 Daily Complete",
+            "Kamu sudah menyelesaikan challenge hari ini!"
+        );
+
+        return;
+
+    }
+
+    localStorage.setItem(
+        "minsaDaily",
+        today
+    );
+
+    openGame("reaction");
+
+}
+
+
+/* =========================================
+   DAILY TEXT
+========================================= */
+
+function updateDaily(){
+
+    const today =
+        getToday();
+
+    const last =
+        localStorage.getItem(
+            "minsaDaily"
+        );
+
+    const text =
+        document.getElementById(
+            "dailyText"
+        );
+
+    if(last === today){
+
+        text.innerText =
+            "✓ Challenge hari ini sudah selesai.";
+
+    }else{
+
+        text.innerText =
+            "Mainkan Reaction Rush dan pecahkan skor terbaikmu.";
+
+    }
+
+}
+
+
+/* =========================================
+   ESCAPE
+========================================= */
+
+document.addEventListener(
+    "keydown",
+    e => {
+
+        if(e.key === "Escape"){
+            closeGame();
+        }
+
+    }
+);
+
+
+/* =========================================
+   CLICK OUTSIDE MODAL
+========================================= */
+
+modal.addEventListener(
+    "click",
+    e => {
+
+        if(e.target === modal){
+            closeGame();
+        }
+
+    }
+);
+
+
+/* =========================================
+   START
+========================================= */
+
+updateUI();
+updateDaily();
+
+</script>
+
+</body>
+</html>
